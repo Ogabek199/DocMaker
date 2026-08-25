@@ -45,7 +45,6 @@ export default function CustomDatePicker({
       const popoverWidth = 280;
       let left = rect.left;
 
-      // Agar ekranning o'ng chekkasidan chiqib ketsa
       if (left + popoverWidth > window.innerWidth - 16) {
         left = window.innerWidth - popoverWidth - 16;
       }
@@ -67,7 +66,6 @@ export default function CustomDatePicker({
     setIsOpen(!isOpen);
   };
 
-  // Scroll yoki Resize bo'lganda pozitsiyani yangilash
   useEffect(() => {
     if (isOpen) {
       updatePosition();
@@ -81,7 +79,46 @@ export default function CustomDatePicker({
     }
   }, [isOpen]);
 
-  // Qiymatdan Date obyektini ajratib olish
+  // Qo'lda yozilganda avtomatik formatlash (Mask)
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value;
+
+    // Faqat raqamlarni ajratib olish
+    const digits = rawVal.replace(/\D/g, "").slice(0, 8);
+
+    if (!digits) {
+      onChange("");
+      return;
+    }
+
+    let formatted = "";
+    if (digits.length <= 2) {
+      formatted = digits;
+    } else if (digits.length <= 4) {
+      formatted = `${digits.slice(0, 2)}.${digits.slice(2)}`;
+    } else {
+      formatted = `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
+    }
+
+    // 8 ta raqam to'liq yozilganda formatga moslash
+    if (digits.length === 8) {
+      const dd = digits.slice(0, 2);
+      const mm = digits.slice(2, 4);
+      const yyyy = digits.slice(4);
+
+      if (outputFormat === "with_g") {
+        formatted = `${dd}.${mm}.${yyyy}г`;
+      } else if (outputFormat === "blanka_quotes") {
+        formatted = `«${dd}» ${mm}. ${yyyy}`;
+      } else {
+        formatted = `${dd}.${mm}.${yyyy}`;
+      }
+    }
+
+    onChange(formatted);
+  };
+
+  // Qiymatdan Date obyektini ajratib olish (DayPicker uchun)
   const parseCurrentDate = (valStr: string): Date | undefined => {
     if (!valStr) return undefined;
     const cleanStr = valStr.replace(/[^0-9.]/g, "");
@@ -141,16 +178,19 @@ export default function CustomDatePicker({
 
   return (
     <div className="w-full relative" ref={containerRef}>
-      <label className="label">{label}</label>
+      <div className="flex items-center justify-between">
+        <label className="label">{label}</label>
+        <span className="text-[10px] text-gray-400 font-mono">KK.OO.YYYY</span>
+      </div>
 
-      {/* Input maydoni */}
+      {/* Input maydoni: Avtomatik formatlovchi (Mask) bilan */}
       <div className="relative flex items-center">
         <input
           type="text"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleInputChange}
           placeholder={placeholder}
-          className="input-field pr-10 font-medium"
+          className="input-field pr-10 font-medium tracking-wide"
         />
         <button
           ref={buttonRef}
