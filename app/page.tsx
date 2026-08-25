@@ -24,9 +24,12 @@ import {
 
 export default function Home() {
   const [docType, setDocType] = useState<DocType>("davernost");
-  const [blankaData, setBlankaData] = useState<BlankaFields>(BLANKA_DEFAULTS);
-  const [davernostData, setDavernostData] =
-    useState<DavernostFields>(DAVERNOST_DEFAULTS);
+  const [blankaData, setBlankaData] = useState<BlankaFields>({
+    ...BLANKA_DEFAULTS,
+  });
+  const [davernostData, setDavernostData] = useState<DavernostFields>({
+    ...DAVERNOST_DEFAULTS,
+  });
 
   const [zoom, setZoom] = useState(0.8);
   const [showPreviewMobile, setShowPreviewMobile] = useState(false);
@@ -43,16 +46,19 @@ export default function Home() {
     []
   );
 
+  // Tiklash (Reset) tugmasi - yangi toza obyekt nusxasi bilan
   const handleReset = () => {
     if (docType === "blanka") {
-      setBlankaData(BLANKA_DEFAULTS);
+      setBlankaData({ ...BLANKA_DEFAULTS });
     } else {
-      setDavernostData(DAVERNOST_DEFAULTS);
+      setDavernostData({ ...DAVERNOST_DEFAULTS });
     }
   };
 
-  const handleZoomIn = () => setZoom((z) => Math.min(Number((z + 0.1).toFixed(1)), 1.3));
-  const handleZoomOut = () => setZoom((z) => Math.max(Number((z - 0.1).toFixed(1)), 0.4));
+  const handleZoomIn = () =>
+    setZoom((z) => Math.min(Number((z + 0.1).toFixed(1)), 1.3));
+  const handleZoomOut = () =>
+    setZoom((z) => Math.max(Number((z - 0.1).toFixed(1)), 0.4));
   const handleZoomReset = () => setZoom(0.8);
 
   return (
@@ -109,7 +115,9 @@ export default function Home() {
               onClick={() => setShowPreviewMobile(!showPreviewMobile)}
             >
               <Eye className="w-4 h-4" />
-              <span>{showPreviewMobile ? "Formaga qaytish" : "Hujjatni ko'rish"}</span>
+              <span>
+                {showPreviewMobile ? "Formaga qaytish" : "Hujjatni ko'rish"}
+              </span>
             </button>
           </div>
         </div>
@@ -124,7 +132,7 @@ export default function Home() {
               showPreviewMobile ? "hidden" : "block"
             } lg:block`}
           >
-            <div className="card p-4 sm:p-5 sticky top-36 bg-white">
+            <div className="card p-4 sm:p-5 sticky top-36 bg-white shadow-sm border border-gray-200">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div>
                   <h2 className="text-sm sm:text-base font-bold text-gray-900">
@@ -139,16 +147,16 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="text-xs text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 px-2 py-1 rounded-md hover:bg-red-50"
+                  className="text-xs text-gray-600 hover:text-red-600 transition-colors flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-red-200 hover:bg-red-50 active:scale-95 cursor-pointer font-medium"
                   title="Boshlang'ich holatga qaytarish"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3.5 h-3.5 text-gray-500 hover:text-red-600" />
                   <span>Tiklash</span>
                 </button>
               </div>
 
-              {/* Scrollable Form Fields */}
-              <div className="max-h-[calc(100vh-320px)] overflow-y-auto pr-1 pb-44">
+              {/* Scrollable Form Fields without artificial bottom clipping */}
+              <div className="max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
                 <DocumentForm
                   docType={docType}
                   blankaData={blankaData}
@@ -175,7 +183,7 @@ export default function Home() {
               !showPreviewMobile ? "hidden" : "block"
             } lg:block`}
           >
-            <div className="card p-3 sm:p-4 bg-white">
+            <div className="card p-3 sm:p-4 bg-white shadow-sm border border-gray-200">
               {/* Preview toolbar */}
               <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2">

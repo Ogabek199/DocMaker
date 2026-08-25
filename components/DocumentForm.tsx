@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { User, FileText, MapPin, Calendar, Hash, Building } from "lucide-react";
+import { User, FileText, Calendar, Hash } from "lucide-react";
 import {
   DocType,
   BlankaFields,
@@ -44,10 +44,10 @@ export default function DocumentForm({
 }: DocumentFormProps) {
   if (docType === "davernost") {
     return (
-      <div className="space-y-4">
-        {/* Haydovchi ma'lumotlari */}
-        <div className="p-3.5 bg-blue-50/50 rounded-xl border border-blue-100 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-900">
+      <div className="space-y-3.5 pb-2">
+        {/* Haydovchi / Vakil ma'lumotlari */}
+        <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 pb-1 border-b border-slate-200/60">
             <User className="w-4 h-4 text-blue-600" />
             <span>Haydovchi / Vakil ma&apos;lumotlari</span>
           </div>
@@ -95,9 +95,9 @@ export default function DocumentForm({
         </div>
 
         {/* Muddat */}
-        <div className="p-3.5 bg-amber-50/50 rounded-xl border border-amber-100 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
-            <Calendar className="w-4 h-4 text-amber-600" />
+        <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-200/70 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-900 pb-1 border-b border-blue-200/60">
+            <Calendar className="w-4 h-4 text-blue-600" />
             <span>Ishonchnoma amal qilish muddati</span>
           </div>
 
@@ -122,10 +122,10 @@ export default function DocumentForm({
 
   // Blanka (Трудовой контракт)
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5 pb-2">
       {/* Shartnoma raqami & Rahbariyat */}
-      <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+      <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 pb-1 border-b border-slate-200/60">
           <FileText className="w-4 h-4 text-blue-600" />
           <span>Shartnoma ma&apos;lumotlari</span>
         </div>
@@ -161,8 +161,8 @@ export default function DocumentForm({
       </div>
 
       {/* Xodim ma'lumotlari */}
-      <div className="p-3.5 bg-blue-50/50 rounded-xl border border-blue-100 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-blue-900">
+      <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 pb-1 border-b border-slate-200/60">
           <User className="w-4 h-4 text-blue-600" />
           <span>Xodim / Haydovchi ma&apos;lumotlari</span>
         </div>
@@ -210,8 +210,8 @@ export default function DocumentForm({
       </div>
 
       {/* Shartnoma muddati */}
-      <div className="p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+      <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200/70 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 pb-1 border-b border-emerald-200/60">
           <Calendar className="w-4 h-4 text-emerald-600" />
           <span>Shartnoma amal qilish muddati</span>
         </div>
