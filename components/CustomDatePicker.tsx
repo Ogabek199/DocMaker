@@ -12,6 +12,7 @@ interface CustomDatePickerProps {
   value: string; // Masalan: "12.05.2021г" yoki "«25» 08. 2026" yoki "24.08.2026"
   onChange: (val: string) => void;
   outputFormat?: "raw_date" | "with_g" | "blanka_quotes";
+  placeholder?: string;
 }
 
 export default function CustomDatePicker({
@@ -19,9 +20,11 @@ export default function CustomDatePicker({
   value,
   onChange,
   outputFormat = "raw_date",
+  placeholder = "KK.OO.YYYY",
 }: CustomDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Qiymatdan Date obyektini ajratib olish
   const parseCurrentDate = (valStr: string): Date | undefined => {
@@ -82,26 +85,33 @@ export default function CustomDatePicker({
   return (
     <div className="w-full relative" ref={popoverRef}>
       <label className="label">{label}</label>
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between input-field cursor-pointer hover:border-blue-400 bg-white"
-      >
-        <span
-          className={
-            value
-              ? "text-gray-900 font-medium text-sm"
-              : "text-gray-400 text-sm"
-          }
+
+      {/* Input maydoni: ham qo'lda yoziladi, ham ikonkasi orqali kalendar ochiladi */}
+      <div className="relative flex items-center">
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="input-field pr-10 font-medium"
+        />
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="absolute right-2 p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+          title="Kalendardan tanlash"
         >
-          {value || "Sanani tanlang..."}
-        </span>
-        <div className="flex items-center gap-1">
-          <CalendarIcon className="w-4 h-4 text-blue-600" />
-        </div>
+          <CalendarIcon className="w-4 h-4" />
+        </button>
       </div>
 
+      {/* Calendar Popover */}
       {isOpen && (
-        <div className="absolute z-50 mt-1.5 p-3 bg-white rounded-2xl shadow-2xl border border-gray-100 left-0 right-auto animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className="absolute z-[9999] mt-2 p-3 bg-white rounded-2xl shadow-2xl border border-gray-200 right-0 sm:left-0 sm:right-auto animate-in fade-in zoom-in-95 duration-150"
+          style={{ width: "max-content", minWidth: "270px" }}
+        >
           <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-2">
             <span className="text-xs font-bold text-gray-700">{label}</span>
             <button
@@ -112,28 +122,49 @@ export default function CustomDatePicker({
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-          <DayPicker
-            mode="single"
-            selected={selectedDate}
-            onSelect={handleSelect}
-            locale={ru}
-            showOutsideDays
-            startMonth={new Date(1990, 0)}
-            endMonth={new Date(2035, 11)}
-            classNames={{
-              root: "custom-day-picker",
-              chevron: "fill-blue-600",
-              day: "text-sm p-2 rounded-lg hover:bg-blue-50 text-gray-800 transition-colors",
-              selected: "bg-blue-600 text-white font-bold hover:bg-blue-700",
-              today: "border border-blue-400 font-semibold",
-              month_caption:
-                "flex justify-center font-bold text-sm text-gray-800 pb-2",
-              nav: "flex justify-between items-center mb-1",
-              button_previous:
-                "p-1 hover:bg-gray-100 rounded-lg text-gray-600",
-              button_next: "p-1 hover:bg-gray-100 rounded-lg text-gray-600",
-            }}
-          />
+
+          <div className="custom-calendar-wrapper">
+            <DayPicker
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleSelect}
+              locale={ru}
+              showOutsideDays
+              startMonth={new Date(1990, 0)}
+              endMonth={new Date(2035, 11)}
+              classNames={{
+                root: "p-1",
+                chevron: "fill-blue-600",
+                day: "text-xs p-2 rounded-lg hover:bg-blue-50 text-gray-800 transition-colors text-center w-8 h-8",
+                selected: "bg-blue-600 text-white font-bold hover:bg-blue-700",
+                today: "border border-blue-400 font-semibold text-blue-600",
+                month_caption:
+                  "flex justify-center font-bold text-xs text-gray-800 pb-2",
+                nav: "flex justify-between items-center mb-1",
+                button_previous:
+                  "p-1 hover:bg-gray-100 rounded-lg text-gray-600",
+                button_next: "p-1 hover:bg-gray-100 rounded-lg text-gray-600",
+                weekday: "text-[11px] font-semibold text-gray-400 text-center w-8 pb-1",
+              }}
+            />
+          </div>
+
+          <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => handleSelect(new Date())}
+              className="text-[11px] text-blue-600 font-semibold hover:underline"
+            >
+              Bugun
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="text-[11px] text-gray-500 hover:text-gray-700"
+            >
+              Yopish
+            </button>
+          </div>
         </div>
       )}
     </div>

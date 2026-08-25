@@ -164,3 +164,18 @@ body {
     width: 100%;
   }
 }
+
+/* ─── Calendar Popover Tuning ─────────────────────────────────────── */
+.rdp-root {
+  --rdp-accent-color: #2563eb;
+  --rdp-accent-background-color: #eff6ff;
+  margin: 0 !important;
+}
+
+.rdp-month {
+  width: 100%;
+}
+
+.rdp-table {
+  max-width: 100%;
+}

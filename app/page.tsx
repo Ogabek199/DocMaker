@@ -148,7 +148,7 @@ export default function Home() {
               </div>
 
               {/* Scrollable Form Fields */}
-              <div className="max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
+              <div className="max-h-[calc(100vh-320px)] overflow-y-auto pr-1 pb-44">
                 <DocumentForm
                   docType={docType}
                   blankaData={blankaData}
