@@ -1,12 +1,18 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-export async function downloadPDF(elementId: string, filename: string = "davernos-blanka.pdf") {
+export async function downloadPDF(
+  elementId: string,
+  filename: string = "hujjat.pdf"
+) {
   const element = document.getElementById(elementId);
   if (!element) {
     console.error("Element not found:", elementId);
     return;
   }
+
+  // Qizil matnlarni yuklab olish paytida qora qilish uchun maxsus rejimni yoqish
+  element.classList.add("export-black-mode");
 
   try {
     const canvas = await html2canvas(element, {
@@ -21,7 +27,6 @@ export async function downloadPDF(elementId: string, filename: string = "daverno
 
     const imgData = canvas.toDataURL("image/png", 1.0);
 
-    // A4 o'lchamlari mm da
     const pdfWidth = 210;
     const pdfHeight = 297;
 
@@ -34,7 +39,6 @@ export async function downloadPDF(elementId: string, filename: string = "daverno
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
-    // Proporsional o'lchamni hisoblash
     const ratio = canvasWidth / canvasHeight;
     let imgWidth = pdfWidth;
     let imgHeight = pdfWidth / ratio;
@@ -52,6 +56,9 @@ export async function downloadPDF(elementId: string, filename: string = "daverno
   } catch (error) {
     console.error("PDF generatsiyada xatolik:", error);
     throw error;
+  } finally {
+    // Rejimni qaytarish (foydalanuvchi yana qizil ta'kidni ko'rishi uchun)
+    element.classList.remove("export-black-mode");
   }
 }
 
@@ -59,38 +66,44 @@ export async function printDocument(elementId: string) {
   const element = document.getElementById(elementId);
   if (!element) return;
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-  });
+  element.classList.add("export-black-mode");
 
-  const dataUrl = canvas.toDataURL("image/png");
-  const windowContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Davernos Blanka</title>
-      <style>
-        body { margin: 0; padding: 0; }
-        img { width: 100%; height: auto; }
-        @page { margin: 0; }
-      </style>
-    </head>
-    <body>
-      <img src="${dataUrl}" />
-    </body>
-    </html>
-  `;
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
 
-  const printWindow = window.open("", "_blank");
-  if (printWindow) {
-    printWindow.document.write(windowContent);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
+    const dataUrl = canvas.toDataURL("image/png");
+    const windowContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>DocMaker Hujjat</title>
+        <style>
+          body { margin: 0; padding: 0; }
+          img { width: 100%; height: auto; }
+          @page { margin: 0; }
+        </style>
+      </head>
+      <body>
+        <img src="${dataUrl}" />
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(windowContent);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    }
+  } finally {
+    element.classList.remove("export-black-mode");
   }
 }

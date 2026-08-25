@@ -238,6 +238,9 @@ export function generateDocx(
     }
   }
 
+  // Ensure ALL remaining red color attributes across the entire document are strictly converted to black
+  xml = xml.replace(/(<w:color[^>]*w:val=")[fF]{2}0000(")/gi, '$1000000$2');
+
   zip.file("word/document.xml", xml);
 
   return Buffer.from(

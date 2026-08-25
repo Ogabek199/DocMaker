@@ -179,3 +179,11 @@ body {
 .rdp-table {
   max-width: 100%;
 }
+
+/* ─── PDF / Export Mode: Make all fields 100% Black ────────────────── */
+.export-black-mode .red-field {
+  color: #000000 !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  padding: 0 !important;
+}
