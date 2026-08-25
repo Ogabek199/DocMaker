@@ -57,53 +57,111 @@ export async function downloadPDF(
     console.error("PDF generatsiyada xatolik:", error);
     throw error;
   } finally {
-    // Rejimni qaytarish (foydalanuvchi yana qizil ta'kidni ko'rishi uchun)
     element.classList.remove("export-black-mode");
   }
 }
 
+/**
+ * Chop etish (Print): Yashirin iframe orqali popup blockerlarsiz
+ * to'g'ridan-to'g'ri va eng sifatli (vektor) tarzda chop etadi.
+ */
 export async function printDocument(elementId: string) {
   const element = document.getElementById(elementId);
-  if (!element) return;
-
-  element.classList.add("export-black-mode");
-
-  try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
-
-    const dataUrl = canvas.toDataURL("image/png");
-    const windowContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>DocMaker Hujjat</title>
-        <style>
-          body { margin: 0; padding: 0; }
-          img { width: 100%; height: auto; }
-          @page { margin: 0; }
-        </style>
-      </head>
-      <body>
-        <img src="${dataUrl}" />
-      </body>
-      </html>
-    `;
-
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(windowContent);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 500);
-    }
-  } finally {
-    element.classList.remove("export-black-mode");
+  if (!element) {
+    console.error("Element not found:", elementId);
+    return;
   }
+
+  // Eski print iframe bo'lsa tozalash
+  const oldIframe = document.getElementById("print-iframe-docmaker");
+  if (oldIframe) {
+    oldIframe.remove();
+  }
+
+  // Yashirin iframe yaratish
+  const iframe = document.createElement("iframe");
+  iframe.id = "print-iframe-docmaker";
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "none";
+  iframe.style.zIndex = "-1";
+
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document;
+  if (!doc) {
+    // Fallback oddiy print
+    window.print();
+    return;
+  }
+
+  // HTML nusxasi
+  const htmlContent = element.outerHTML;
+
+  doc.open();
+  doc.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>DocMaker Hujjat</title>
+      <style>
+        @page {
+          size: A4 portrait;
+          margin: 10mm;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          background: #ffffff;
+          font-family: 'Times New Roman', Times, serif;
+          color: #000000;
+        }
+        #docx-preview-container {
+          box-shadow: none !important;
+          border: none !important;
+          padding: 0 !important;
+          width: 100% !important;
+          min-height: auto !important;
+        }
+        .red-field {
+          color: #000000 !important;
+          background-color: transparent !important;
+          border: none !important;
+          padding: 0 !important;
+          font-weight: bold !important;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        p {
+          line-height: 1.5;
+        }
+      </style>
+    </head>
+    <body>
+      ${htmlContent}
+    </body>
+    </html>
+  `);
+  doc.close();
+
+  // Yuklangandan so'ng print oynasini ochish
+  iframe.onload = () => {
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.error("Print error:", err);
+      } finally {
+        setTimeout(() => {
+          iframe.remove();
+        }, 1500);
+      }
+    }, 200);
+  };
 }
