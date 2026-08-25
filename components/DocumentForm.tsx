@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { User, FileText, Calendar, Hash } from "lucide-react";
+import { User, FileText, Calendar, Hash, ShieldCheck } from "lucide-react";
 import {
   DocType,
   BlankaFields,
@@ -36,144 +36,90 @@ const REGIONS = [
 ];
 
 export default function DocumentForm({
-  docType,
   blankaData,
   davernostData,
   onBlankaChange,
   onDavernostChange,
 }: DocumentFormProps) {
-  if (docType === "davernost") {
-    return (
-      <div className="space-y-3.5 pb-2">
-        {/* Haydovchi / Vakil ma'lumotlari */}
-        <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 pb-1 border-b border-slate-200/60">
-            <User className="w-4 h-4 text-blue-600" />
-            <span>Haydovchi / Vakil ma&apos;lumotlari</span>
-          </div>
+  const workerFio = davernostData.workerFio || blankaData.workerFio || "";
+  const passport = davernostData.passport || blankaData.passport || "";
+  const issuedDate = davernostData.issuedDate || blankaData.issuedDate || "";
+  const issuedPlace = davernostData.issuedPlace || blankaData.issuedPlace || "";
+  const startDate = davernostData.validFrom || blankaData.startDate || "";
+  const endDate = davernostData.validUntil || blankaData.endDate || "";
+  const contractNumber = blankaData.contractNumber || "21";
 
-          <div>
-            <label className="label">F.I.Sh. (Familiya Ism Sharif)</label>
-            <input
-              type="text"
-              className="input-field"
-              value={davernostData.workerFio}
-              onChange={(e) => onDavernostChange({ workerFio: e.target.value })}
-              placeholder="ABDUKADIROV BAKHTIYOR IMOMALIEVICH"
-            />
-          </div>
+  const handleWorkerFio = (val: string) => {
+    onBlankaChange({ workerFio: val });
+  };
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="label">Pasport seriya va raqami</label>
-              <input
-                type="text"
-                className="input-field uppercase"
-                value={davernostData.passport}
-                onChange={(e) => onDavernostChange({ passport: e.target.value })}
-                placeholder="FA 2786135"
-              />
-            </div>
-            <div>
-              <CustomDatePicker
-                label="Pasport berilgan sana"
-                value={davernostData.issuedDate}
-                onChange={(val) => onDavernostChange({ issuedDate: val })}
-                outputFormat="with_g"
-              />
-            </div>
-          </div>
+  const handlePassport = (val: string) => {
+    onBlankaChange({ passport: val });
+  };
 
-          <div>
-            <CustomSelect
-              label="Pasport berilgan viloyat / joy"
-              value={davernostData.issuedPlace}
-              options={REGIONS}
-              onChange={(val) => onDavernostChange({ issuedPlace: val })}
-            />
-          </div>
-        </div>
+  const handleIssuedDate = (val: string) => {
+    onBlankaChange({ issuedDate: val });
+  };
 
-        {/* Muddat */}
-        <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-200/70 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-900 pb-1 border-b border-blue-200/60">
-            <Calendar className="w-4 h-4 text-blue-600" />
-            <span>Ishonchnoma amal qilish muddati</span>
-          </div>
+  const handleIssuedPlace = (val: string) => {
+    onBlankaChange({ issuedPlace: val });
+  };
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <CustomDatePicker
-              label="Boshlanish sanasi"
-              value={davernostData.validFrom}
-              onChange={(val) => onDavernostChange({ validFrom: val })}
-              outputFormat="raw_date"
-            />
-            <CustomDatePicker
-              label="Tugash sanasi"
-              value={davernostData.validUntil}
-              onChange={(val) => onDavernostChange({ validUntil: val })}
-              outputFormat="raw_date"
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleStartDate = (val: string) => {
+    onBlankaChange({ startDate: val });
+  };
 
-  // Blanka (Трудовой контракт)
+  const handleEndDate = (val: string) => {
+    onBlankaChange({ endDate: val });
+  };
+
+  const handleContractNumber = (val: string) => {
+    onBlankaChange({ contractNumber: val });
+  };
+
   return (
     <div className="space-y-3.5 pb-2">
-      {/* Shartnoma raqami & Rahbariyat */}
+      {/* 1. Shartnoma raqami */}
       <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-800 pb-1 border-b border-slate-200/60">
           <FileText className="w-4 h-4 text-blue-600" />
           <span>Shartnoma ma&apos;lumotlari</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="label">Shartnoma raqami</label>
-            <div className="relative">
-              <input
-                type="text"
-                className="input-field pl-8"
-                value={blankaData.contractNumber}
-                onChange={(e) =>
-                  onBlankaChange({ contractNumber: e.target.value })
-                }
-                placeholder="21"
-              />
-              <Hash className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3.5" />
-            </div>
-          </div>
-
-          <div>
-            <label className="label">Direktor F.I.Sh.</label>
+        <div>
+          <label className="label">Shartnoma raqami (Blanka uchun)</label>
+          <div className="relative">
             <input
               type="text"
-              className="input-field"
-              value={blankaData.directorFio}
-              onChange={(e) => onBlankaChange({ directorFio: e.target.value })}
-              placeholder="SOBIROV DAVLATBEK ATABEKOVICH"
+              className="input-field pl-8"
+              value={contractNumber}
+              onChange={(e) => handleContractNumber(e.target.value)}
+              placeholder="21"
             />
+            <Hash className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3.5" />
           </div>
         </div>
       </div>
 
-      {/* Xodim ma'lumotlari */}
+      {/* 2. Xodim / Haydovchi ma'lumotlari (Sinxronlangan) */}
       <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 pb-1 border-b border-slate-200/60">
-          <User className="w-4 h-4 text-blue-600" />
-          <span>Xodim / Haydovchi ma&apos;lumotlari</span>
+        <div className="flex items-center justify-between pb-1 border-b border-slate-200/60">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+            <User className="w-4 h-4 text-blue-600" />
+            <span>Xodim / Haydovchi ma&apos;lumotlari</span>
+          </div>
+          <span className="text-[10.5px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
+            <ShieldCheck className="w-3 h-3 text-emerald-600" /> Sinxronlangan
+          </span>
         </div>
 
         <div>
-          <label className="label">Xodim F.I.Sh.</label>
+          <label className="label">F.I.Sh. (Familiya Ism Sharif)</label>
           <input
             type="text"
             className="input-field"
-            value={blankaData.workerFio}
-            onChange={(e) => onBlankaChange({ workerFio: e.target.value })}
+            value={workerFio}
+            onChange={(e) => handleWorkerFio(e.target.value)}
             placeholder="ABDUKADIROV BAKHTIYOR IMOMALIEVICH"
           />
         </div>
@@ -184,16 +130,16 @@ export default function DocumentForm({
             <input
               type="text"
               className="input-field uppercase"
-              value={blankaData.passport}
-              onChange={(e) => onBlankaChange({ passport: e.target.value })}
+              value={passport}
+              onChange={(e) => handlePassport(e.target.value)}
               placeholder="FA 2786135"
             />
           </div>
           <div>
             <CustomDatePicker
               label="Pasport berilgan sana"
-              value={blankaData.issuedDate}
-              onChange={(val) => onBlankaChange({ issuedDate: val })}
+              value={issuedDate}
+              onChange={handleIssuedDate}
               outputFormat="with_g"
             />
           </div>
@@ -202,32 +148,32 @@ export default function DocumentForm({
         <div>
           <CustomSelect
             label="Pasport berilgan viloyat / joy"
-            value={blankaData.issuedPlace}
+            value={issuedPlace}
             options={REGIONS}
-            onChange={(val) => onBlankaChange({ issuedPlace: val })}
+            onChange={handleIssuedPlace}
           />
         </div>
       </div>
 
-      {/* Shartnoma muddati */}
+      {/* 3. Amal qilish muddati */}
       <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200/70 space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 pb-1 border-b border-emerald-200/60">
           <Calendar className="w-4 h-4 text-emerald-600" />
-          <span>Shartnoma amal qilish muddati</span>
+          <span>Hujjatlar amal qilish muddati</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <CustomDatePicker
             label="Boshlanish sanasi"
-            value={blankaData.startDate}
-            onChange={(val) => onBlankaChange({ startDate: val })}
-            outputFormat="blanka_quotes"
+            value={startDate}
+            onChange={handleStartDate}
+            outputFormat="raw_date"
           />
           <CustomDatePicker
             label="Tugash sanasi"
-            value={blankaData.endDate}
-            onChange={(val) => onBlankaChange({ endDate: val })}
-            outputFormat="blanka_quotes"
+            value={endDate}
+            onChange={handleEndDate}
+            outputFormat="raw_date"
           />
         </div>
       </div>

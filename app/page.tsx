@@ -35,24 +35,47 @@ export default function Home() {
   const [showPreviewMobile, setShowPreviewMobile] = useState(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
+  // Blanka o'zgarganda davernostning umumiy maydonlari ham avtomatik sinxronlanadi
   const handleBlankaChange = useCallback((updated: Partial<BlankaFields>) => {
-    setBlankaData((prev) => ({ ...prev, ...updated }));
+    setBlankaData((prev) => {
+      const next = { ...prev, ...updated };
+      setDavernostData((prevDav) => ({
+        ...prevDav,
+        ...(updated.workerFio !== undefined && { workerFio: updated.workerFio }),
+        ...(updated.passport !== undefined && { passport: updated.passport }),
+        ...(updated.issuedDate !== undefined && { issuedDate: updated.issuedDate }),
+        ...(updated.issuedPlace !== undefined && { issuedPlace: updated.issuedPlace }),
+        ...(updated.startDate !== undefined && { validFrom: updated.startDate }),
+        ...(updated.endDate !== undefined && { validUntil: updated.endDate }),
+      }));
+      return next;
+    });
   }, []);
 
+  // Davernost o'zgarganda blankaning umumiy maydonlari ham avtomatik sinxronlanadi
   const handleDavernostChange = useCallback(
     (updated: Partial<DavernostFields>) => {
-      setDavernostData((prev) => ({ ...prev, ...updated }));
+      setDavernostData((prev) => {
+        const next = { ...prev, ...updated };
+        setBlankaData((prevBlanka) => ({
+          ...prevBlanka,
+          ...(updated.workerFio !== undefined && { workerFio: updated.workerFio }),
+          ...(updated.passport !== undefined && { passport: updated.passport }),
+          ...(updated.issuedDate !== undefined && { issuedDate: updated.issuedDate }),
+          ...(updated.issuedPlace !== undefined && { issuedPlace: updated.issuedPlace }),
+          ...(updated.validFrom !== undefined && { startDate: updated.validFrom }),
+          ...(updated.validUntil !== undefined && { endDate: updated.validUntil }),
+        }));
+        return next;
+      });
     },
     []
   );
 
-  // Tiklash (Reset) tugmasi - yangi toza obyekt nusxasi bilan
+  // Tiklash (Reset) tugmasi - ikkala hujjatni ham boshlang'ich holatga qaytaradi
   const handleReset = () => {
-    if (docType === "blanka") {
-      setBlankaData({ ...BLANKA_DEFAULTS });
-    } else {
-      setDavernostData({ ...DAVERNOST_DEFAULTS });
-    }
+    setBlankaData({ ...BLANKA_DEFAULTS });
+    setDavernostData({ ...DAVERNOST_DEFAULTS });
   };
 
   const handleZoomIn = () =>
@@ -76,7 +99,7 @@ export default function Home() {
                 setDocType("davernost");
                 setShowPreviewMobile(false);
               }}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 docType === "davernost"
                   ? "bg-white text-blue-700 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -91,7 +114,7 @@ export default function Home() {
                 setDocType("blanka");
                 setShowPreviewMobile(false);
               }}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 docType === "blanka"
                   ? "bg-white text-blue-700 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -106,7 +129,7 @@ export default function Home() {
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
             <div className="hidden md:flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Qizil maydonlarni to&apos;ldiring va DOCX/PDF oling</span>
+              <span>Ma&apos;lumotlarni bir marta kiriting — ikkala hujjat ham tayyorlanadi</span>
             </div>
 
             <button
@@ -136,12 +159,10 @@ export default function Home() {
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div>
                   <h2 className="text-sm sm:text-base font-bold text-gray-900">
-                    {docType === "davernost"
-                      ? "Доверенность maydonlari"
-                      : "Трудовой контракт maydonlari"}
+                    Hujjat ma&apos;lumotlari
                   </h2>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Qizil bilan belgilangan joylar
+                    Доверенность va Бланка uchun umumiy
                   </p>
                 </div>
                 <button
@@ -155,7 +176,7 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Scrollable Form Fields without artificial bottom clipping */}
+              {/* Scrollable Form Fields */}
               <div className="max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
                 <DocumentForm
                   docType={docType}
@@ -172,6 +193,7 @@ export default function Home() {
                   docType={docType}
                   blankaData={blankaData}
                   davernostData={davernostData}
+                  onDocTypeChange={setDocType}
                 />
               </div>
             </div>
@@ -189,7 +211,8 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                   <h2 className="text-xs sm:text-sm font-bold text-gray-800">
-                    Jonli ko&apos;rish (A4 Preview)
+                    Jonli ko&apos;rish —{" "}
+                    {docType === "davernost" ? "Доверенность" : "Бланка (Трудовой контракт)"}
                   </h2>
                 </div>
 
@@ -198,7 +221,7 @@ export default function Home() {
                     type="button"
                     onClick={handleZoomOut}
                     disabled={zoom <= 0.4}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors cursor-pointer"
                     title="Kichraytirish"
                   >
                     <ZoomOut className="w-4 h-4 text-gray-600" />
@@ -206,7 +229,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={handleZoomReset}
-                    className="px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors min-w-[52px] text-center"
+                    className="px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors min-w-[52px] text-center cursor-pointer"
                   >
                     {Math.round(zoom * 100)}%
                   </button>
@@ -214,7 +237,7 @@ export default function Home() {
                     type="button"
                     onClick={handleZoomIn}
                     disabled={zoom >= 1.3}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors cursor-pointer"
                     title="Kattalashtirish"
                   >
                     <ZoomIn className="w-4 h-4 text-gray-600" />
@@ -243,6 +266,7 @@ export default function Home() {
                     docType={docType}
                     blankaData={blankaData}
                     davernostData={davernostData}
+                    containerId="docx-preview-container"
                   />
                 </div>
               </div>
@@ -253,12 +277,39 @@ export default function Home() {
                   docType={docType}
                   blankaData={blankaData}
                   davernostData={davernostData}
+                  onDocTypeChange={setDocType}
                 />
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Offscreen hidden containers for instantaneous PDF generation of both documents */}
+      <div
+        style={{
+          position: "fixed",
+          left: "-9999px",
+          top: 0,
+          width: "210mm",
+          pointerEvents: "none",
+          zIndex: -1,
+        }}
+        aria-hidden="true"
+      >
+        <DocumentPreview
+          docType="davernost"
+          blankaData={blankaData}
+          davernostData={davernostData}
+          containerId="pdf-export-davernost"
+        />
+        <DocumentPreview
+          docType="blanka"
+          blankaData={blankaData}
+          davernostData={davernostData}
+          containerId="pdf-export-blanka"
+        />
+      </div>
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-3.5 px-4 mt-auto">

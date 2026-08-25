@@ -95,60 +95,25 @@ function findRedGroups(
   return groups;
 }
 
-/** Replace all red runs in a group with a new value (first run gets value, rest get empty) */
+/** Replace all red runs in a group with a new value cleanly */
 function replaceGroup(xml: string, groupStart: number, groupEnd: number, newValue: string): string {
   const groupXml = xml.slice(groupStart, groupEnd);
   
-  // Find all runs in this group
-  const runRegex = /<w:r[ >][\s\S]*?<\/w:r>/g;
-  let runMatch: RegExpExecArray | null;
-  
-  const runs: { start: number; end: number; xml: string }[] = [];
-  while ((runMatch = runRegex.exec(groupXml)) !== null) {
-    const isRed = /FF0000/i.test(runMatch[0]);
-    if (isRed) {
-      runs.push({ start: runMatch.index, end: runMatch.index + runMatch[0].length, xml: runMatch[0] });
+  // Find first red run to get its rPr (properties)
+  const firstRunMatch = groupXml.match(/<w:r[ >][\s\S]*?<\/w:r>/);
+  let rPrXml = "";
+  if (firstRunMatch) {
+    const rPrMatch = firstRunMatch[0].match(/<w:rPr[\s\S]*?<\/w:rPr>/);
+    if (rPrMatch) {
+      rPrXml = rPrMatch[0].replace(/(<w:color[^>]*w:val=")[^"]+(")/gi, '$1000000$2');
     }
   }
   
-  if (runs.length === 0) return xml;
+  const hasSpaces = newValue.startsWith(" ") || newValue.endsWith(" ");
+  const spaceAttr = hasSpaces ? ' xml:space="preserve"' : "";
+  const newRun = `<w:r>${rPrXml}<w:t${spaceAttr}>${escapeXml(newValue)}</w:t></w:r>`;
   
-  // Build new group XML:
-  // - First red run: set text to newValue, change color to black
-  // - Rest red runs: set text to empty, keep structure
-  let newGroupXml = groupXml;
-  
-  // Process in reverse order so indices stay valid
-  for (let i = runs.length - 1; i >= 0; i--) {
-    const run = runs[i];
-    let newRunXml = run.xml;
-    
-    if (i === 0) {
-      // Replace color FF0000 with 000000
-      newRunXml = newRunXml.replace(/(<w:color[^>]*w:val=")FF0000(")/gi, '$1000000$2');
-      // Replace all <w:t> content with newValue (handle first <w:t>)
-      let first = true;
-      newRunXml = newRunXml.replace(/<w:t([^>]*)>([\s\S]*?)<\/w:t>/g, (match, attrs, _content) => {
-        if (first) {
-          first = false;
-          // Preserve xml:space="preserve" if text has leading/trailing spaces
-          const hasSpaces = newValue.startsWith(' ') || newValue.endsWith(' ');
-          const spaceAttr = hasSpaces ? ' xml:space="preserve"' : attrs;
-          return `<w:t${spaceAttr}>${escapeXml(newValue)}</w:t>`;
-        }
-        return `<w:t${attrs}></w:t>`;
-      });
-    } else {
-      // Empty out this run's text
-      newRunXml = newRunXml.replace(/<w:t([^>]*)>([\s\S]*?)<\/w:t>/g, '<w:t$1></w:t>');
-      // Also change color to black
-      newRunXml = newRunXml.replace(/(<w:color[^>]*w:val=")FF0000(")/gi, '$1000000$2');
-    }
-    
-    newGroupXml = newGroupXml.slice(0, run.start) + newRunXml + newGroupXml.slice(run.end);
-  }
-  
-  return xml.slice(0, groupStart) + newGroupXml + xml.slice(groupEnd);
+  return xml.slice(0, groupStart) + newRun + xml.slice(groupEnd);
 }
 
 function escapeXml(str: string): string {
@@ -160,10 +125,14 @@ function escapeXml(str: string): string {
 }
 
 /** Format a date string for blanka dates like "«25» 08. 2026" */
-function formatBlankaDate(dateStr: string): string {
-  // Accept DD.MM.YYYY or already formatted
+export function formatBlankaDate(dateStr: string): string {
   if (!dateStr) return "";
-  const match = dateStr.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  let match = dateStr.match(/«?(\d{1,2})»?[.\s/-]+(\d{1,2})[.\s/-]+(\d{4})/);
+  if (match) {
+    const [, dd, mm, yyyy] = match;
+    return `«${dd.padStart(2, "0")}» ${mm.padStart(2, "0")}. ${yyyy}`;
+  }
+  match = dateStr.match(/«?(\d{1,2})»?[.\s]*(\d{1,2})[.\s]*(\d{4})/);
   if (match) {
     const [, dd, mm, yyyy] = match;
     return `«${dd.padStart(2, "0")}» ${mm.padStart(2, "0")}. ${yyyy}`;

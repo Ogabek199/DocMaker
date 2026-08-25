@@ -9,7 +9,6 @@ export interface BlankaFields {
   passport: string;
   issuedPlace: string;
   issuedDate: string;
-  directorFio: string;
   startDate: string;
   endDate: string;
 }
@@ -29,9 +28,8 @@ export const BLANKA_DEFAULTS: BlankaFields = {
   passport: "FA 2786135",
   issuedPlace: "Ферганская область",
   issuedDate: "12.05.2021г",
-  directorFio: "SOBIROV DAVLATBEK ATABEKOVICH",
-  startDate: "«25» 08. 2026",
-  endDate: "«24» 08. 2028",
+  startDate: "24.08.2026",
+  endDate: "23.08.2028",
 };
 
 export const DAVERNOST_DEFAULTS: DavernostFields = {
@@ -44,9 +42,8 @@ export const DAVERNOST_DEFAULTS: DavernostFields = {
 };
 
 // Blanka: group_index → field key (from analysis)
-// Group 0: contractNumber, Group 1,2,9: workerFio, Group 3,10: passport
-// Group 4,11: issuedPlace, Group 5,12: issuedDate
-// Group 6: unknown "21" (year), Group 7: directorFio, Group 8: dates
+// Group 0,6: contractNumber, Group 1,2,7,9: workerFio, Group 3,10: passport
+// Group 4,11: issuedPlace, Group 5,12: issuedDate, Group 8: dates
 export const BLANKA_GROUP_MAP: Record<number, keyof BlankaFields> = {
   0: "contractNumber",
   1: "workerFio",
@@ -55,7 +52,7 @@ export const BLANKA_GROUP_MAP: Record<number, keyof BlankaFields> = {
   4: "issuedPlace",
   5: "issuedDate",
   6: "contractNumber", // repeat of year number (keep same)
-  7: "directorFio",
+  7: "workerFio",
   8: "startDate", // will be formatted specially
   9: "workerFio",
   10: "passport",

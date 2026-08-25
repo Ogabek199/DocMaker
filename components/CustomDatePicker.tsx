@@ -121,13 +121,11 @@ export default function CustomDatePicker({
   // Qiymatdan Date obyektini ajratib olish (DayPicker uchun)
   const parseCurrentDate = (valStr: string): Date | undefined => {
     if (!valStr) return undefined;
-    const cleanStr = valStr.replace(/[^0-9.]/g, "");
-    const parts = cleanStr.split(".").filter(Boolean);
-    if (parts.length >= 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      let year = parseInt(parts[2], 10);
-      if (year < 100) year += 2000;
+    const digits = valStr.replace(/\D/g, "");
+    if (digits.length >= 8) {
+      const day = parseInt(digits.slice(0, 2), 10);
+      const month = parseInt(digits.slice(2, 4), 10) - 1;
+      const year = parseInt(digits.slice(4, 8), 10);
       const d = new Date(year, month, day);
       if (!isNaN(d.getTime())) return d;
     }

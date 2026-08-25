@@ -7,6 +7,7 @@ interface DocumentPreviewProps {
   docType: DocType;
   blankaData: BlankaFields;
   davernostData: DavernostFields;
+  containerId?: string;
 }
 
 const Red = ({ children }: { children: React.ReactNode }) => (
@@ -15,15 +16,49 @@ const Red = ({ children }: { children: React.ReactNode }) => (
   </span>
 );
 
+function formatBlankaDateDisplay(dateStr: string): string {
+  if (!dateStr) return "";
+  let match = dateStr.match(/«?(\d{1,2})»?[.\s/-]+(\d{1,2})[.\s/-]+(\d{4})/);
+  if (match) {
+    const [, dd, mm, yyyy] = match;
+    return `«${dd.padStart(2, "0")}» ${mm.padStart(2, "0")}. ${yyyy}`;
+  }
+  match = dateStr.match(/«?(\d{1,2})»?[.\s]*(\d{1,2})[.\s]*(\d{4})/);
+  if (match) {
+    const [, dd, mm, yyyy] = match;
+    return `«${dd.padStart(2, "0")}» ${mm.padStart(2, "0")}. ${yyyy}`;
+  }
+  return dateStr;
+}
+
+function parseDateParts(dateStr: string, fallback: { day: string; month: string; year: string }) {
+  if (!dateStr) return fallback;
+  let match = dateStr.match(/«?(\d{1,2})»?[.\s/-]+(\d{1,2})[.\s/-]+(\d{4})/);
+  if (match) {
+    const [, dd, mm, yyyy] = match;
+    return { day: dd.padStart(2, "0"), month: mm.padStart(2, "0"), year: yyyy };
+  }
+  match = dateStr.match(/«?(\d{1,2})»?[.\s]*(\d{1,2})[.\s]*(\d{4})/);
+  if (match) {
+    const [, dd, mm, yyyy] = match;
+    return { day: dd.padStart(2, "0"), month: mm.padStart(2, "0"), year: yyyy };
+  }
+  return fallback;
+}
+
 export default function DocumentPreview({
   docType,
   blankaData,
   davernostData,
+  containerId = "docx-preview-container",
 }: DocumentPreviewProps) {
   if (docType === "davernost") {
+    const fromDate = parseDateParts(davernostData.validFrom, { day: "24", month: "08", year: "2026" });
+    const untilDate = parseDateParts(davernostData.validUntil, { day: "23", month: "08", year: "2028" });
+
     return (
       <div
-        id="docx-preview-container"
+        id={containerId}
         className="w-full bg-white text-black text-[13px] leading-relaxed p-8 sm:p-14 font-serif shadow-paper border border-gray-300"
         style={{
           minHeight: "297mm",
@@ -93,7 +128,7 @@ export default function DocumentPreview({
           <p className="indent-8">
             Настоящий доверенность&nbsp;&nbsp;вступает в силу с момента подписания и действует&nbsp;&nbsp;с&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <Red>
-              «{davernostData.validFrom?.split(".")[0] || "24"}» {davernostData.validFrom?.split(".")[1] || "08"}.{davernostData.validFrom?.split(".")[2] || "2026"}.г&nbsp;&nbsp;по&nbsp;&nbsp;«{davernostData.validUntil?.split(".")[0] || "23"}» {davernostData.validUntil?.split(".")[1] || "08"}.{davernostData.validUntil?.split(".")[2] || "2028"}.г
+              «{fromDate.day}» {fromDate.month}.{fromDate.year}.г&nbsp;&nbsp;по&nbsp;&nbsp;«{untilDate.day}» {untilDate.month}.{untilDate.year}.г
             </Red>
           </p>
         </div>
@@ -114,7 +149,7 @@ export default function DocumentPreview({
   // Blanka: Трудовой Контракт (100% asl DOCX matnlari bilan)
   return (
     <div
-      id="docx-preview-container"
+      id={containerId}
       className="w-full bg-white text-black text-[12px] leading-snug p-8 sm:p-12 font-serif shadow-paper border border-gray-300 space-y-6"
       style={{
         minHeight: "297mm",
@@ -228,7 +263,7 @@ export default function DocumentPreview({
         </div>
 
         <p className="text-justify indent-6 text-[12px]">
-          ООО«MUSFIRA SAVDO TRANS» именуемое в дальнейшем «КОМПАНИЯ» в лице директора Б, Мамажонов действующего на основании Устава с одной стороны <Red>{blankaData.directorFio || "SOBIROV DAVLATBEK ATABEKOVICH"}</Red> именуемого в дальнейшем «ИСПОЛЬЗОВАТЕЛЬ» в лице ВОДИТЕЛЬ, ЭКСПЕДИТОР, КАССИР действующего на основании ТРУДОВОГО КОНТРАКТА с другой стороны заключили настоящий договор о нижеследующем:
+          ООО«MUSFIRA SAVDO TRANS» именуемое в дальнейшем «КОМПАНИЯ» в лице директора Б, Мамажонов действующего на основании Устава с одной стороны <Red>{blankaData.workerFio || "ABDUKADIROV BAKHTIYOR IMOMALIEVICH"}</Red> именуемого в дальнейшем «ИСПОЛЬЗОВАТЕЛЬ» в лице ВОДИТЕЛЬ, ЭКСПЕДИТОР, КАССИР действующего на основании ТРУДОВОГО КОНТРАКТА с другой стороны заключили настоящий договор о нижеследующем:
         </p>
 
         <div>
@@ -272,8 +307,8 @@ export default function DocumentPreview({
           </h2>
           <p className="text-justify text-[11.5px]">
             6.1 Настоящий договор вступает в силу с момента подписания и действует по&nbsp;
-            <Red>{blankaData.startDate || "«25» 08. 2026"} года</Red>&nbsp;
-            <Red>{blankaData.endDate || "«24» 08. 2028"} года</Red>.
+            <Red>{formatBlankaDateDisplay(blankaData.startDate) || "«24» 08. 2026"} года</Red>&nbsp;
+            <Red>{formatBlankaDateDisplay(blankaData.endDate) || "«23» 08. 2028"} года</Red>.
           </p>
         </div>
 
